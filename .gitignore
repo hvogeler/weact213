@@ -1,0 +1,40 @@
+# ESP-IDF build output
+build/
+*.bin
+*.elf
+*.map
+
+# ESP-IDF dependencies
+dependencies.lock
+
+# Managed components (downloaded by ESP-IDF)
+managed_components/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ESP-IDF sdkconfig
+sdkconfig.old
+sdkconfig.defaults.old
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
