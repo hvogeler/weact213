@@ -15,6 +15,7 @@ typedef struct {
     gpio_num_t pin_rst;      // Reset
     gpio_num_t pin_busy;     // Busy signal
     int spi_clock_speed_hz;  // SPI clock speed (default: 4MHz)
+    bool landscape;          // true = landscape (250x122), false = portrait (122x250)
 } lvgl_weact_epaper_config_t;
 
 /**

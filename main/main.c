@@ -20,7 +20,6 @@
 
 static const char *TAG = "epaper_main";
 
-
 /**
  * @brief Create simple UI demonstration
  *
@@ -39,14 +38,14 @@ static void create_demo_ui(void)
     lv_label_set_text(title, "WeAct E-Paper");
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
 
-    // Create status label
+    // Create status label (landscape: 250x122)
     lv_obj_t *status = lv_label_create(scr);
-    lv_label_set_text(status, "LVGL 9.4.0\n122x250 pixels");
+    lv_label_set_text(status, "LVGL 9.4.0\n250x122 pixels\nLandscape Mode");
     lv_obj_align(status, LV_ALIGN_CENTER, 0, 0);
 
-    // Create a simple rectangle
+    // Create a simple rectangle (wider for landscape)
     lv_obj_t *rect = lv_obj_create(scr);
-    lv_obj_set_size(rect, 80, 60);
+    lv_obj_set_size(rect, 100, 40);
     lv_obj_align(rect, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_set_style_bg_color(rect, lv_color_black(), 0);
 
@@ -67,14 +66,16 @@ void app_main(void)
     lv_init();
 
     // ===============================================
-    // Step 2: Create display with default config
+    // Step 2: Create display with landscape config
     // ===============================================
     ESP_LOGI(TAG, "Creating WeAct E-Paper display...");
 
     lvgl_weact_epaper_config_t config = lvgl_weact_epaper_get_default_config();
+    config.landscape = true;  // Enable landscape mode (250x122)
 
     lv_display_t *disp = lvgl_weact_epaper_create(&config);
-    if (disp == NULL) {
+    if (disp == NULL)
+    {
         ESP_LOGE(TAG, "Failed to create display!");
         return;
     }
@@ -106,7 +107,8 @@ void app_main(void)
     // ===============================================
     ESP_LOGI(TAG, "Entering main loop...");
 
-    while (1) {
+    while (1)
+    {
         // Handle LVGL tasks (rendering, input, etc.)
         uint32_t time_till_next = lv_timer_handler();
 

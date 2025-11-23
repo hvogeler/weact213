@@ -29,16 +29,17 @@ static const char *TAG = "lvgl_weact_epaper";
  *
  * Holds the low-level driver handle and LVGL display objects
  */
-typedef struct
+typedef struct lvgl_weact_epaper_ctx_t
 {
     weact_epaper_t epaper; // Low-level driver handle
     lv_display_t *disp;    // LVGL 9 display object
     void *draw_buf1;       // LVGL draw buffer 1
     void *draw_buf2;       // LVGL draw buffer 2 (optional)
+    bool landscape;        // Landscape orientation flag
 } lvgl_weact_epaper_ctx_t;
 
 // Static context (single display instance)
-static lvgl_weact_epaper_ctx_t g_ctx = {0};
+static lvgl_weact_epaper_ctx_t g_ctx;
 
 /**
  * @brief Convert RGB color to monochrome
@@ -134,8 +135,26 @@ static void lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px
             // Convert RGB to monochrome
             uint8_t mono_color = rgb_to_mono(color);
 
+            // Transform coordinates for landscape mode
+            int32_t hw_x, hw_y;
+            if (ctx->landscape)
+            {
+                // Landscape: Rotate 90 degrees clockwise
+                // LVGL coords (0,0) is top-left of 250x122 display
+                // Hardware coords (0,0) is top-left of 122x250 display
+                // Transform: hw_x = y, hw_y = (WEACT_EPAPER_HEIGHT-1) - x
+                hw_x = area->y1 + y;
+                hw_y = (WEACT_EPAPER_HEIGHT - 1) - (area->x1 + x);
+            }
+            else
+            {
+                // Portrait: Direct mapping
+                hw_x = area->x1 + x;
+                hw_y = area->y1 + y;
+            }
+
             // Draw to low-level framebuffer
-            weact_epaper_draw_pixel(&ctx->epaper, area->x1 + x, area->y1 + y, mono_color);
+            weact_epaper_draw_pixel(&ctx->epaper, hw_x, hw_y, mono_color);
 
             px_index++;
         }
@@ -167,6 +186,7 @@ lvgl_weact_epaper_config_t lvgl_weact_epaper_get_default_config(void)
         .pin_rst = 4,
         .pin_busy = 18,
         .spi_clock_speed_hz = 4000000, // 4 MHz
+        .landscape = false,             // Default: portrait mode
     };
 
     return config;
@@ -209,6 +229,9 @@ lv_display_t *lvgl_weact_epaper_create(const lvgl_weact_epaper_config_t *config)
         .spi_clock_speed_hz = config->spi_clock_speed_hz,
     };
 
+    // Store landscape orientation preference
+    g_ctx.landscape = config->landscape;
+
     if (!weact_epaper_init(&g_ctx.epaper, &epaper_config))
     {
         ESP_LOGE(TAG, "Failed to initialize low-level driver");
@@ -225,16 +248,21 @@ lv_display_t *lvgl_weact_epaper_create(const lvgl_weact_epaper_config_t *config)
     // LVGL 9 Display Creation
     // ===============================================
 
+    // Determine display dimensions based on orientation
+    int32_t disp_width = config->landscape ? WEACT_EPAPER_HEIGHT : WEACT_EPAPER_WIDTH;
+    int32_t disp_height = config->landscape ? WEACT_EPAPER_WIDTH : WEACT_EPAPER_HEIGHT;
+
     // Create display object (LVGL 9 API)
-    g_ctx.disp = lv_display_create(WEACT_EPAPER_WIDTH, WEACT_EPAPER_HEIGHT);
+    g_ctx.disp = lv_display_create(disp_width, disp_height);
     if (g_ctx.disp == NULL)
     {
         ESP_LOGE(TAG, "Failed to create LVGL display");
         return NULL;
     }
 
-    ESP_LOGI(TAG, "LVGL 9 display created: %dx%d",
-             WEACT_EPAPER_WIDTH, WEACT_EPAPER_HEIGHT);
+    ESP_LOGI(TAG, "LVGL 9 display created: %dx%d (%s)",
+             (int)disp_width, (int)disp_height,
+             config->landscape ? "landscape" : "portrait");
 
     // Allocate LVGL draw buffers
     // Buffer size: For e-paper, use smaller buffer to reduce flush time
@@ -266,21 +294,19 @@ lv_display_t *lvgl_weact_epaper_create(const lvgl_weact_epaper_config_t *config)
                            buf_size * sizeof(lv_color_t),
                            LV_DISPLAY_RENDER_MODE_FULL);
 
-    ESP_LOGI(TAG, "A");
     // Set flush callback (LVGL 9 API)
     lv_display_set_flush_cb(g_ctx.disp, lvgl_flush_cb);
 
-    ESP_LOGI(TAG, "B");
     // Store context in user_data for callback access
     lv_display_set_user_data(g_ctx.disp, &g_ctx);
 
-    ESP_LOGI(TAG, "C");
     // Set default display
     lv_display_set_default(g_ctx.disp);
 
     ESP_LOGI(TAG, "LVGL 9 display registered successfully");
-    ESP_LOGI(TAG, "Display: WeAct 2.13\" E-Paper (%dx%d)",
-             WEACT_EPAPER_WIDTH, WEACT_EPAPER_HEIGHT);
+    ESP_LOGI(TAG, "Display: WeAct 2.13\" E-Paper (%dx%d) %s mode",
+             (int)disp_width, (int)disp_height,
+             config->landscape ? "landscape" : "portrait");
 
     ESP_LOGI(TAG, "Setting up LVGL tick timer...");
 
