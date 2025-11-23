@@ -1,2 +1,4 @@
-idf_component_register(SRCS "main.c" "lvgl_demo_ui.c"
-                       INCLUDE_DIRS ".")
+idf_component_register(SRCS
+    "test_ssd1680.c"
+    "ssd1680_lowlevel.c"
+    INCLUDE_DIRS ".")

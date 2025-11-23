@@ -15,4 +15,3 @@ dependencies:
   #   # All dependencies of `main` are public by default.
   #   public: true
   lvgl/lvgl: ^8.3.11
-  espressif/esp_lcd_ssd1681: ^0.1.0~1

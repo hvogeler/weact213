@@ -1,5 +1,0 @@
-dependencies:
-  esp_lcd_ssd1681:
-    path: ../../../
-  idf: '>=5.0'
-  lvgl/lvgl: ~8.3.0
