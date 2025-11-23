@@ -66,7 +66,7 @@ static void ui_init()
 
     // Create current temp
     lv_obj_t *lbl_cur_temp = lv_label_create(main_view_);
-    lv_label_set_text(lbl_cur_temp, "Current Temp °C");
+    lv_label_set_text(lbl_cur_temp, "Current °C");
 
     lv_obj_set_width(lbl_cur_temp, lv_pct(100));
     lv_obj_set_style_text_font(lbl_cur_temp, &lv_font_montserrat_14, LV_PART_MAIN);
@@ -85,7 +85,7 @@ static void ui_init()
 
     // Create target temp
     lv_obj_t *lbl_tgt_temp = lv_label_create(main_view_);
-    lv_label_set_text(lbl_tgt_temp, "Target Temp °C");
+    lv_label_set_text(lbl_tgt_temp, "Target °C");
     lv_obj_set_width(lbl_tgt_temp, lv_pct(100));
     lv_obj_set_style_text_font(lbl_tgt_temp, &lv_font_montserrat_14, LV_PART_MAIN);
     lv_obj_set_style_text_color(lbl_tgt_temp, lv_color_black(), LV_PART_MAIN);
@@ -106,12 +106,25 @@ static void ui_init()
 
     // Version label
     lv_obj_t *label_version = lv_label_create(main_view_);
-    lv_label_set_text_fmt(label_version, "v%s  %s",
+    lv_label_set_text_fmt(label_version, "v%s\n%s",
                           CONFIG_APP_PROJECT_VER,
                           "vogeler2129");
     lv_obj_set_style_text_font(label_version, &lv_font_montserrat_14, LV_PART_MAIN);
     lv_obj_set_style_text_color(label_version, lv_color_black(), LV_PART_MAIN);
     lv_obj_align(label_version, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+
+    // Define line points as static (they need to persist)
+    static lv_point_precise_t separator_points[] = {
+        {0, 0},
+        {0, 122} // 100px vertical line
+    };
+
+    lv_obj_t *separator = lv_line_create(main_view_);
+    lv_obj_set_style_pad_all(separator, 0, LV_PART_MAIN);
+    lv_line_set_points(separator, separator_points, 2);
+    lv_obj_align(separator, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_line_width(separator, 3, 0);
+    lv_obj_set_style_line_color(separator, lv_color_black(), 0);
 
     // xTaskCreatePinnedToCore(update_task, "update_task", 4096 * 2, NULL, 0, NULL, 1);
 }
