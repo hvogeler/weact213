@@ -20,6 +20,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <string.h>
+#include "esp_timer.h"
 
 static const char *TAG = "lvgl_weact_epaper";
 
@@ -172,6 +173,16 @@ lvgl_weact_epaper_config_t lvgl_weact_epaper_get_default_config(void)
 }
 
 /**
+ * @brief LVGL tick timer callback
+ *
+ * LVGL requires a periodic tick to handle timing, animations, etc.
+ */
+static void lvgl_tick_timer_cb(void *arg)
+{
+    lv_tick_inc(10); // 10ms tick
+}
+
+/**
  * @brief Create LVGL display
  *
  * Initializes the low-level driver and registers it with LVGL 9.
@@ -270,6 +281,16 @@ lv_display_t *lvgl_weact_epaper_create(const lvgl_weact_epaper_config_t *config)
     ESP_LOGI(TAG, "LVGL 9 display registered successfully");
     ESP_LOGI(TAG, "Display: WeAct 2.13\" E-Paper (%dx%d)",
              WEACT_EPAPER_WIDTH, WEACT_EPAPER_HEIGHT);
+
+    ESP_LOGI(TAG, "Setting up LVGL tick timer...");
+
+    const esp_timer_create_args_t lvgl_tick_timer_args = {
+        .callback = lvgl_tick_timer_cb,
+        .name = "lvgl_tick"};
+
+    esp_timer_handle_t lvgl_tick_timer = NULL;
+    ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 10 * 1000)); // 10ms
 
     return g_ctx.disp;
 }

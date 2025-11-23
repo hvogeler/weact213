@@ -20,15 +20,6 @@
 
 static const char *TAG = "epaper_main";
 
-/**
- * @brief LVGL tick timer callback
- *
- * LVGL requires a periodic tick to handle timing, animations, etc.
- */
-static void lvgl_tick_timer_cb(void *arg)
-{
-    lv_tick_inc(10);  // 10ms tick
-}
 
 /**
  * @brief Create simple UI demonstration
@@ -93,16 +84,16 @@ void app_main(void)
     // ===============================================
     // Step 3: Set up LVGL tick timer
     // ===============================================
-    ESP_LOGI(TAG, "Setting up LVGL tick timer...");
+    // ESP_LOGI(TAG, "Setting up LVGL tick timer...");
 
-    const esp_timer_create_args_t lvgl_tick_timer_args = {
-        .callback = lvgl_tick_timer_cb,
-        .name = "lvgl_tick"
-    };
+    // const esp_timer_create_args_t lvgl_tick_timer_args = {
+    //     .callback = lvgl_tick_timer_cb,
+    //     .name = "lvgl_tick"
+    // };
 
-    esp_timer_handle_t lvgl_tick_timer = NULL;
-    ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 10 * 1000));  // 10ms
+    // esp_timer_handle_t lvgl_tick_timer = NULL;
+    // ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
+    // ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, 10 * 1000));  // 10ms
 
     // ===============================================
     // Step 4: Create UI
