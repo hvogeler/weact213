@@ -45,11 +45,11 @@ static lvgl_weact_epaper_ctx_t g_ctx;
  * @brief Convert RGB color to monochrome
  *
  * Uses brightness threshold to determine black vs white.
- * Brightness < 128 -> Black (0)
- * Brightness >= 128 -> White (1)
+ * Hardware expects: 1 = BLACK, 0 = WHITE
+ * LVGL colors: (0,0,0) = black, (255,255,255) = white
  *
  * @param color LVGL RGB color
- * @return 0 for black, 1 for white
+ * @return 1 for black, 0 for white (hardware format)
  */
 static inline uint8_t rgb_to_mono(lv_color_t color)
 {
@@ -62,8 +62,8 @@ static inline uint8_t rgb_to_mono(lv_color_t color)
     // Calculate brightness (weighted average for human perception)
     uint16_t brightness = (r * 30 + g * 59 + b * 11) / 100;
 
-    // Threshold: < 128 is black, >= 128 is white
-    return (brightness < 128) ? 0 : 1;
+    // Threshold: < 128 is black (1), >= 128 is white (0)
+    return (brightness < 128) ? 1 : 0;
 }
 
 /**
