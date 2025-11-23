@@ -1,4 +1,4 @@
 idf_component_register(SRCS
-    "test_ssd1680.c"
-    "ssd1680_lowlevel.c"
-    INCLUDE_DIRS ".")
+    "main.c"
+    INCLUDE_DIRS "."
+    REQUIRES lvgl_weact_epaper lvgl__lvgl esp_timer)
